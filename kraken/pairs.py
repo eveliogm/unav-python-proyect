@@ -31,6 +31,8 @@ def get_data(pair,since = int(dt.datetime.now().date().strftime("%s")),interval 
     if len(ret["error"])==0:
         data = pd.DataFrame(ret["result"][pair],columns=ticks_schema)
         data["time"] = pd.to_datetime(data['time'],unit='s')
+        data.set_index("time",inplace=True)
+        data["close"] = data["close"].astype(float)
     else:
         raise ValueError(f"Pair: {pair} cannot be found")
     return data

@@ -1,4 +1,5 @@
 import pandas
+import plotly.graph_objects as go
 class stock_graphs():
     __data = {}
     __layout = {}
@@ -9,7 +10,7 @@ class stock_graphs():
             'type': False,
             'stock_name':"",
             'currency_name':"",
-            'simple_col': "Close",
+            'simple_col': "close",
             'simple_hover':"y",
             'color': "#42C4F7",
             'yaxis': "y1"
@@ -133,7 +134,6 @@ class stock_graphs():
             #draw candels
             True
         self.__config["stock"]["b_view"] = True
-        # self.update_graph()
         return True
     
 
@@ -188,8 +188,7 @@ class stock_graphs():
         
         if "stock" not in self.__data.keys():
             raise KeyError("At least need stock data to update the graph, add it")
-        
-        print(self.__data.values())
+
         return go.Figure(
             data = list(self.__data.values()),
             layout= self.__layout,

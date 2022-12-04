@@ -69,7 +69,7 @@ def rsi(data: pd.Series, win = 14 , ma = "EWMA") -> pd.Series:
 
     # Assert that rsi (from win value in data (taking into account the first nan from diff) is
     # between 0 and 100. 
-    check_rsi = rsi[length:]
+    check_rsi = rsi[win:]
     assert ((0 <= check_rsi) & (check_rsi <= 100)).all()
     
     return rsi
