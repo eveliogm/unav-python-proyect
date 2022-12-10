@@ -102,7 +102,7 @@ class stock_graphs():
             mode="lines",
         )
     
-    def __get_pos(self,ind: str, pos: str):
+    def __get_pos(self,ind: str):
         mask = [self.__config[b]["b_view"] for b in self.__config["general"]["indicators"]]
         pos_n = [self.__config[b]["pos"] for b in self.__config["general"]["indicators"]]
         n_graphs = "two"
@@ -111,8 +111,7 @@ class stock_graphs():
             n_graphs = "tree"
             if pos_n[mask] == "over":
                 conf = "over"
-                pos = "below"
-        self.__config[ind]["pos"] = pos
+                self.__config[ind]["pos"] = "below"
         self.__config[ind]["domain"] = self.__config["general"]["domain"][n_graphs][conf]
         return True
         
@@ -158,7 +157,7 @@ class stock_graphs():
         elif g_type == "below":
             self.__config["rsi"]["yaxis"] = "y2"
             self.__add_simple(df,"rsi")
-            self.__get_pos("rsi",g_type)
+            self.__get_pos("rsi")
             self.__create_multiple_layout("rsi")
             
         self.__config["stock"]["b_view"] = True
@@ -193,3 +192,24 @@ class stock_graphs():
             data = list(self.__data.values()),
             layout= self.__layout,
         )
+
+    def __update_layout(self):
+        indicators = []
+        for b in self.__config["general"]["indicators"]:
+            if  self.__config[b]["b_view"]:
+                indicators.append(b)
+        if (len(indicators)==1) and (self.__config[indicators[0]]["pos"]!="on"):
+            self.__get_pos(indicators[0])
+            self.__create_multiple_layout(indicators[0])
+        else:
+            self.__create_simple_layout()
+        return True
+
+    def delete_indicator(self,indicator):
+        
+        if indicator not in self.__data.keys():
+            raise KeyError(f"Cannot Delete what not exist: {indicator} not added")
+        self.__data.pop(indicator)
+        self.__config[indicator]["b_view"] = False
+        self.__update_layout()
+        return True
