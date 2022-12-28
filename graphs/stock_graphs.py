@@ -30,12 +30,16 @@ class stock_graphs():
         },
         'ma':
         {
-            
             'b_view': False,
             'pos':'below',
             'type': False,
-            'name': "Moving Average",
-            'window': 14
+            'domain':"",
+            'name': "Moving Average Index",
+            'window':14,
+            'yaxis': "y2",
+            'simple_col': "media_movil",
+            'simple_hover':"y",
+            'color':"#a85c32"
 
         },
         "general":
@@ -50,26 +54,6 @@ class stock_graphs():
                     {
                         'yaxis_domain':[0.3, 1],
                         'yaxis2':{"domain": [0, 0.20]}
-                    },
-                     'over':
-                    {
-                        'yaxis_domain':[0, 0.20],
-                        'yaxis2':{"domain": [0.3, 1]}
-                    }
-                },
-                'three':
-                {
-                    'below':
-                    {
-                        'yaxis_domain':[0.4, 1],
-                        'yaxis2':{"domain": [0, 0.10]},
-                        'yaxis3':{"domain": [0.15, 0.30]}
-                    },
-                     'over':
-                    {
-                        'yaxis_domain':[0.2, 0.8],
-                        'yaxis2':{"domain": [0, 0.10]},
-                        'yaxis3':{"domain": [0.85, 1]}
                     }
                 }
             }
@@ -102,18 +86,24 @@ class stock_graphs():
             mode="lines",
         )
     
-    def __get_pos(self,ind: str):
-        mask = [self.__config[b]["b_view"] for b in self.__config["general"]["indicators"]]
-        pos_n = [self.__config[b]["pos"] for b in self.__config["general"]["indicators"]]
-        n_graphs = "two"
-        conf = "below"
-        if any(mask) & (~self.__config[ind]["b_view"]):
-            n_graphs = "tree"
-            if pos_n[mask] == "over":
-                conf = "over"
-                self.__config[ind]["pos"] = "below"
-        self.__config[ind]["domain"] = self.__config["general"]["domain"][n_graphs][conf]
+    def __set_domain(self,ind: str):
+        if self.__config[ind]["pos"] == "below":
+            self.__config[ind]["domain"] = self.__config["general"]["domain"]["two"]["below"]
         return True
+
+    def __check_pos(self,ind: str, pos:str):
+        b_result = True
+        indicators = {}
+        for key in self.__config["general"]["indicators"]:
+            indicators[key] = self.__config[key]
+        print(indicators)
+        print(indicators.items())
+        for key, value in indicators.items():
+            if value["b_view"] and (value["b_view"]=="below") and (key != ind) and (pos == "below") :
+                print(f"The indicator {key} was on the graph, delete it before adding the {ind} indicator")
+                b_result = False
+
+        return b_result
         
     def add_stock(self,df: pandas.DataFrame,g_type:str):
         """
@@ -134,10 +124,24 @@ class stock_graphs():
             True
         self.__config["stock"]["b_view"] = True
         return True
-    
+    def __add_indicator(self,df: pandas.DataFrame,ind:str,g_type:str):
 
+
+        self.__config[ind]["pos"] = g_type
+        if g_type == "on":
+            self.__config[ind]["yaxis"] = "y1"
+            self.__add_simple(df,ind)
+            self.__create_simple_layout()
+        elif g_type == "below":
+            self.__config[ind]["yaxis"] = "y2"
+            self.__add_simple(df,ind)
+            self.__set_domain(ind)
+            self.__create_multiple_layout(ind)
+            
+        self.__config["stock"]["b_view"] = True
+        return True  
     
-    def add_rsi(self,df: pandas.DataFrame,g_type:str):
+    def add_rsi(self,df: pandas.DataFrame):
         """
         Add gri configuration to a figure
 
@@ -149,18 +153,8 @@ class stock_graphs():
         Returns:
         bool: true if added false if not. 
         """
-        self.__config["stock"]["pos"] = g_type
-        if g_type == "on":
-            self.__config["rsi"]["yaxis"] = "y1"
-            self.__add_simple(df,"rsi")
-            self.__create_simple_layout()
-        elif g_type == "below":
-            self.__config["rsi"]["yaxis"] = "y2"
-            self.__add_simple(df,"rsi")
-            self.__get_pos("rsi")
-            self.__create_multiple_layout("rsi")
-            
-        self.__config["stock"]["b_view"] = True
+        if self.__check_pos("rsi","below"):
+            self.__add_indicator(df,"rsi","below")
         return True
     
     def add_ma(self,df: pandas.DataFrame,g_type:str):
@@ -175,19 +169,14 @@ class stock_graphs():
         Returns:
         bool: true if added false if not. 
         """
-        if g_type == "on":
-            #add line behind (addTrace)
-            True
-        elif g_type == "below":
-            #adline separate (addScatter)
-            True
+        if g_type in (["on","below"]):
+            self.__add_indicator(df,"ma",g_type)
         return True
 
     def update_graph(self):
         
         if "stock" not in self.__data.keys():
             raise KeyError("At least need stock data to update the graph, add it")
-
         return go.Figure(
             data = list(self.__data.values()),
             layout= self.__layout,
@@ -195,11 +184,15 @@ class stock_graphs():
 
     def __update_layout(self):
         indicators = []
+        b_below = False
         for b in self.__config["general"]["indicators"]:
             if  self.__config[b]["b_view"]:
                 indicators.append(b)
-        if (len(indicators)==1) and (self.__config[indicators[0]]["pos"]!="on"):
-            self.__get_pos(indicators[0])
+                if self.__config[b]["pos"] == "below":
+                    b_below = True
+           
+        if (len(indicators)==1) and b_below:
+            self.__set_domain(indicators[0])
             self.__create_multiple_layout(indicators[0])
         else:
             self.__create_simple_layout()
