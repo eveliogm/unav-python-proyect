@@ -23,18 +23,22 @@ def rsi_single(df,col,n):
         rsi = 100.0
     return rsi
 
-def rsi(data: pd.Series, win = 14 , ma = "EWMA") -> pd.Series:
-    """
-    Calculate rsi for a column in a pandas dataframe. 
-    SMA calculates the average of price data, while EMA gives more weight to current data.
-  
-    Parameters:
-    over (pandas.Series): dataframe that contains the column with numeric values to be calculated 
-    w (int): Window of the rsi calculation
-  
-    Returns:
-    float: rsi value is between 0 to 100
-    """
+
+
+def rsi_type(ma:str, win:int) -> str:
+    '''> The function `rsi_type` takes a string as an argument and returns a function that takes a pandas
+    series as an argument and returns a pandas series
+    
+    Parameters
+    ----------
+    ma : str
+        The type of moving average to use.
+    
+    Returns
+    -------
+        A function that takes a series and returns a series
+    
+    '''
     if  ma == "EWMA":
         fn_roll = lambda s: s.ewm(com=(win-1), adjust=True, min_periods = win).mean()
     elif ma == "EMA":
@@ -45,6 +49,31 @@ def rsi(data: pd.Series, win = 14 , ma = "EWMA") -> pd.Series:
         fn_roll = lambda s: s.ewm(alpha=1 / win).mean()
     else:
         raise ValueError(f"MA type: {ma} is not a valid method. Try EMA, SMA, RMA or EWMA")
+    return fn_roll
+
+def rsi(data: pd.Series, win = 14 , ma = "EWMA") -> pd.Series:
+    '''
+    Calculate RSI: 
+    the difference between the current and previous record, then calculate the up and down
+    values, then calculate the rolling mean of the up and down values, then calculate the relative
+    strength, then calculate the RSI
+    SMA calculates the average of price data, while EMA gives more weight to current data.
+    
+    Parameters
+    ----------
+    data : pd.Series
+        The data to calculate the RSI on.
+    win, optional
+        The number of periods to use for the moving average calculation
+    ma, optional
+        The type of moving average to use. This can be either "RMA", "EMA", "SMA" or "EWMA".
+    
+    Returns
+    -------
+        A series with the RSI values.
+    
+    '''
+    fn_roll = rsi_type(ma,win)
     
     # Calculate diferences over every record from the previous one
     delta = data.diff()
@@ -71,5 +100,5 @@ def rsi(data: pd.Series, win = 14 , ma = "EWMA") -> pd.Series:
     # between 0 and 100. 
     check_rsi = rsi[win:]
     assert ((0 <= check_rsi) & (check_rsi <= 100)).all()
-    
+
     return rsi

@@ -60,22 +60,53 @@ class stock_graphs():
         }
     }
     def __create_simple_layout(self):
+        '''It creates a dictionary of layout parameters for the plotly graph
+        
+        Returns
+        -------
+            A dictionary of the layout of the graph.
+        
+        '''
         self.__layout = dict(
             autosize=True,
             xaxis_rangeslider_visible=True,
             showlegend=False,
+            height = 800,
         )
         return True
     def __create_multiple_layout(self,ind:str):
+        '''> This function creates a layout for the graph
+        
+        Parameters
+        ----------
+        ind : str
+            The index of the layout to be created.
+        
+        Returns
+        -------
+            A dictionary of the layout for the graph.
+        
+        '''
         self.__layout = dict(
             autosize=True,
             xaxis_rangeslider_visible=True,
             showlegend=False,
+            height = 800,
         )
         self.__layout.update(self.__config[ind]["domain"])
         return True
     
     def __add_simple(self,df: pandas.DataFrame,ind: str):
+        '''> This function adds a simple line plot to the figure
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            pandas.DataFrame
+        ind : str
+            the index of the dataframe
+        
+        '''
         self.__data[ind] = dict( 
             type="scatter",
             y=df[self.__config[ind]['simple_col']].values,
@@ -87,17 +118,39 @@ class stock_graphs():
         )
     
     def __set_domain(self,ind: str):
+        '''It sets the domain of the plot based on the position of the plot
+        
+        Parameters
+        ----------
+        ind : str
+            the index of the subplot
+        
+        Returns
+        -------
+            The domain of the graph.
+        
+        '''
         if self.__config[ind]["pos"] == "below":
             self.__config[ind]["domain"] = self.__config["general"]["domain"]["two"]["below"]
         return True
 
     def __check_pos(self,ind: str, pos:str):
+        '''If the indicator is set to be viewed, and the indicator is set to be viewed below the graph, and the
+        indicator is not the one being added, and the indicator being added is set to be viewed below the
+        graph, then print a message saying that the indicator is already on the graph and return False
+        
+        Parameters
+        ----------
+        ind : str
+            the name of the indicator
+        pos : str
+            The position of the indicator on the graph.
+        
+        '''
         b_result = True
         indicators = {}
         for key in self.__config["general"]["indicators"]:
             indicators[key] = self.__config[key]
-        print(indicators)
-        print(indicators.items())
         for key, value in indicators.items():
             if value["b_view"] and (value["b_view"]=="below") and (key != ind) and (pos == "below") :
                 print(f"The indicator {key} was on the graph, delete it before adding the {ind} indicator")
@@ -125,6 +178,22 @@ class stock_graphs():
         self.__config["stock"]["b_view"] = True
         return True
     def __add_indicator(self,df: pandas.DataFrame,ind:str,g_type:str):
+        '''This function adds an indicator to the chart
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            pandas.DataFrame
+        ind : str
+            The name of the indicator you want to add.
+        g_type : str
+            This is the position of the indicator. It can be "on" or "below".
+        
+        Returns
+        -------
+            True if the indicator is added to the graph.
+        
+        '''
 
 
         self.__config[ind]["pos"] = g_type
@@ -174,6 +243,13 @@ class stock_graphs():
         return True
 
     def update_graph(self):
+        '''> The function takes in a dictionary of data and a layout, and returns a figure object
+        
+        Returns
+        -------
+            A figure object
+        
+        '''
         
         if "stock" not in self.__data.keys():
             raise KeyError("At least need stock data to update the graph, add it")
@@ -183,6 +259,13 @@ class stock_graphs():
         )
 
     def __update_layout(self):
+        '''It creates a layout for the indicators that are to be displayed
+        
+        Returns
+        -------
+            True
+        
+        '''
         indicators = []
         b_below = False
         for b in self.__config["general"]["indicators"]:
@@ -199,6 +282,18 @@ class stock_graphs():
         return True
 
     def delete_indicator(self,indicator):
+        '''> This function deletes an indicator from the chart
+        
+        Parameters
+        ----------
+        indicator
+            The name of the indicator you want to add.
+        
+        Returns
+        -------
+            True
+        
+        '''
         
         if indicator not in self.__data.keys():
             raise KeyError(f"Cannot Delete what not exist: {indicator} not added")
