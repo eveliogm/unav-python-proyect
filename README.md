@@ -1,5 +1,20 @@
 # unav-python-proyect
 
 
-to install docker: 
-https://docs.streamlit.io/knowledge-base/tutorials/deploy/docker
+
+### Create the enviroment
+
+```console
+conda env create -f environment.yml
+```
+
+### Activate the enviroment
+```console
+conda activate unav-python-project
+```
+
+### Run the streamlit app:
+
+```console
+streamlit run app.py
+```

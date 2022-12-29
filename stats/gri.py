@@ -1,30 +1,6 @@
 import pandas as pd
 import numpy as np
 
-def rsi_single(df,col,n): 
-    """
-    Calculate rsi for a column in a pandas dataframe
-  
-    Parameters:
-    df (pandas.DataFrame): dataframe that contains the column with numeric values to be calculated 
-    col (str): Column name in df that contins all numerics values. 
-  
-    Returns:
-    float: rsi value is between 0 to 100
-    """
-    delta = df[col].diff()
-    n = diff.shape[0]
-    delta_pos = diff[diff > 0].sum()/n
-    delta_neg = diff[diff < 0].sum()/n
-    if diff_neg:
-        rs = diff_pos / abs(diff_neg)
-        rsi = 100.0-(100.0)/(1.0 + rs)
-    else:
-        rsi = 100.0
-    return rsi
-
-
-
 def rsi_type(ma:str, win:int) -> str:
     '''> The function `rsi_type` takes a string as an argument and returns a function that takes a pandas
     series as an argument and returns a pandas series
